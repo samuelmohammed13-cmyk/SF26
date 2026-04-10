@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css">
+  <title>Memorabilia Portal</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:      #1a3a9e;
+      --blue-dark: #122a7a;
+      --blue-bg:   #eef0fb;
+      --white:     #ffffff;
+      --red:       #d32f2f;
+      --red-border:#f5c6c6;
+      --shadow:    0 2px 6px rgba(0,0,0,.12), 0 8px 20px rgba(0,0,0,.08);
+      --transition: 0.15s ease;
+      --squircle:  24px;
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: #f0f2f8;
+      font-family: 'Lato', 'Roboto', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    /* SQUARE CARD – 480x480 */
+    .card {
+      background: var(--white);
+      border-radius: var(--squircle);
+      box-shadow: var(--shadow);
+      width: 100%;
+      max-width: 480px;
+      aspect-ratio: 1 / 1;
+      padding: 28px 32px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* LOGIN HEADER (folder + text) – hidden on success */
+    #login-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      flex-shrink: 0;
+    }
+    .page-icon {
+      width: 68px;
+      height: 68px;
+      border-radius: 18px;
+      background: var(--blue-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    .page-icon .mdi {
+      font-size: 2.4rem;
+      color: var(--blue);
+    }
+    .welcome-line {
+      font-size: 0.85rem;
+      font-weight: 400;
+      color: #555;
+      margin-bottom: 2px;
+    }
+    .portal-title {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--blue);
+      text-align: center;
+      margin-bottom: 4px;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    .portal-subtitle {
+      font-size: 0.95rem;
+      font-weight: 400;
+      color: var(--blue);
+      opacity: 0.85;
+      text-align: center;
+      margin-bottom: 16px;
+      transition: margin 0.2s;
+    }
+
+    /* Reduce margin when error visible */
+    .card:has(.v-alert.show) .portal-subtitle {
+      margin-bottom: 8px;
+    }
+
+    #login-view {
+      width: 100%;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Vuetify-style outlined error alert */
+    .v-alert {
+      display: none;
+      width: 100%;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 14px;
+      border: 1px solid var(--red);
+      border-radius: 12px;
+      background: transparent;
+      margin-bottom: 16px;
+    }
+    .v-alert.show {
+      display: flex;
+      animation: shake 0.3s ease;
+    }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+    .v-alert__wrapper {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      width: 100%;
+    }
+    .v-alert__icon {
+      flex-shrink: 0;
+      font-size: 1.3rem;
+      color: var(--red);
+    }
+    .v-alert__content {
+      flex: 1;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      color: var(--red);
+      font-weight: 500;
+    }
+
+    .input-row {
+      width: 100%;
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .mdi-prefix {
+      font-size: 1.4rem;
+      color: var(--blue);
+      opacity: 0.65;
+      padding-bottom: 8px;
+      flex-shrink: 0;
+    }
+    .input-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .input-wrap label {
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 4px;
+    }
+    .input-wrap input {
+      background: var(--blue-bg);
+      border: none;
+      border-bottom: 2.5px solid var(--blue);
+      border-radius: 8px 8px 0 0;
+      padding: 8px 36px 8px 10px;
+      font-size: 0.95rem;
+      color: #1a1a2e;
+      outline: none;
+      width: 100%;
+      transition: border-color var(--transition), background var(--transition);
+    }
+    .input-wrap input:focus {
+      border-bottom-color: #0e2b7a;
+      background: #f9faff;
+    }
+    .input-wrap input::placeholder {
+      color: #aab;
+      font-weight: 300;
+    }
+
+    .pw-toggle {
+      position: absolute;
+      right: 4px;
+      bottom: 4px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #7a7a9a;
+      font-size: 1.1rem;
+      padding: 4px;
+    }
+    .pw-toggle:hover { color: var(--blue); }
+
+    .btn-login {
+      width: 100%;
+      height: 46px;
+      background: var(--blue);
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 900;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 40px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 6px;
+      transition: background var(--transition), transform 0.1s, box-shadow var(--transition);
+      box-shadow: 0 3px 8px rgba(26, 58, 158, 0.2);
+    }
+    .btn-login:hover {
+      background: var(--blue-dark);
+      box-shadow: 0 5px 12px rgba(18, 42, 122, 0.25);
+    }
+    .btn-login:active { transform: scale(0.98); }
+    .btn-login:disabled { opacity: 0.6; cursor: not-allowed; box-shadow: none; }
+    .btn-login .spin {
+      display: none;
+      width: 18px;
+      height: 18px;
+      border: 2.5px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn-login.loading .spin { display: block; }
+    .btn-login.loading .lbl { display: none; }
+
+    /* Success panel – no header, clean */
+    .success-panel {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 24px;
+      width: 100%;
+      height: 100%;
+      justify-content: center;
+    }
+    .success-panel.show {
+      display: flex;
+      animation: fadeUp 0.35s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .suc-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 18px;
+      background: var(--blue-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .suc-icon .mdi { font-size: 2.6rem; color: var(--blue); }
+    .suc-name {
+      font-weight: 900;
+      font-size: 1.6rem;
+      color: var(--blue);
+    }
+    .suc-msg {
+      font-size: 1rem;
+      color: #666;
+      line-height: 1.5;
+      margin-bottom: 4px;
+    }
+
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      height: 50px;
+      padding: 0 34px;
+      background: var(--blue);
+      color: #fff;
+      font-size: 0.9rem;
+      font-weight: 900;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: none;
+      border-radius: 40px;
+      box-shadow: 0 3px 8px rgba(26, 58, 158, 0.2);
+      margin-top: 8px;
+    }
+    .btn-download:hover { background: var(--blue-dark); }
+
+    .btn-back {
+      background: none;
+      border: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #999;
+      text-decoration: underline;
+      margin-top: 12px;
+      cursor: pointer;
+    }
+    .btn-back:hover { color: var(--blue); }
+
+    /* Loading overlay */
+    #init-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(240,242,248,0.96);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      z-index: 200;
+      backdrop-filter: blur(2px);
+      transition: opacity 0.2s;
+    }
+    #init-overlay p {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      color: var(--blue);
+    }
+    .big-spin {
+      width: 44px;
+      height: 44px;
+      border: 4px solid #dde;
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+    .overlay-error {
+      background: white;
+      padding: 24px;
+      border-radius: 24px;
+      text-align: center;
+      max-width: 320px;
+      box-shadow: var(--shadow);
+    }
+  </style>
+</head>
+<body>
+
+<div id="init-overlay">
+  <div class="big-spin"></div>
+  <p>Connecting to Drive…</p>
+</div>
+
+<div class="card">
+  <!-- LOGIN HEADER (hidden on success) -->
+  <div id="login-header">
+    <div class="page-icon">
+      <span class="mdi mdi-folder-open-outline"></span>
+    </div>
+    <div class="welcome-line">Welcome to</div>
+    <div class="portal-title">Memorabilia Portal</div>
+    <div class="portal-subtitle">Document Sign In</div>
+  </div>
+
+  <div id="login-view">
+    <div class="v-alert" id="err-alert">
+      <div class="v-alert__wrapper">
+        <span class="v-alert__icon mdi mdi-alert"></span>
+        <div class="v-alert__content" id="err-text">Invalid Alias or Password.</div>
+      </div>
+    </div>
+
+    <div class="input-row">
+      <span class="mdi mdi-account-outline mdi-prefix"></span>
+      <div class="input-wrap">
+        <label for="alias">Alias</label>
+        <input type="text" id="alias" placeholder="Your alias" autocomplete="username" spellcheck="false">
+      </div>
+    </div>
+
+    <div class="input-row">
+      <span class="mdi mdi-key-outline mdi-prefix"></span>
+      <div class="input-wrap">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Portal password" autocomplete="current-password">
+        <button class="pw-toggle" id="pw-toggle" type="button">
+          <span class="mdi mdi-eye-off-outline" id="pw-eye"></span>
+        </button>
+      </div>
+    </div>
+
+    <button class="btn-login" id="submit-btn">
+      <div class="spin"></div>
+      <span class="lbl">Sign in</span>
+    </button>
+  </div>
+
+  <div class="success-panel" id="success-view">
+    <div class="suc-icon"><span class="mdi mdi-file-pdf-box"></span></div>
+    <div class="suc-name" id="suc-alias"></div>
+    <div class="suc-msg">Your memorabilia document is ready.<br>Tap below to download.</div>
+    <a class="btn-download" id="dl-link" href="#" target="_blank">
+      <span class="mdi mdi-download"></span> Download PDF
+    </a>
+    <button class="btn-back" id="back-btn">← Sign in again</button>
+  </div>
+</div>
+
+<script>
+  (function(){
+    const API_KEY = 'AIzaSyCGI4xxeHxC5-CQCkkT8VtTb5-OKGHqXno';
+    const FOLDER_ID = '1allHIv8CjGKnSCzyEHHd8MzkOGJe18Lh';
+    const PORTAL_PW = 'Catchment2';
+
+    const overlay = document.getElementById('init-overlay');
+    const loginHeader = document.getElementById('login-header');
+    const errAlert = document.getElementById('err-alert');
+    const errText = document.getElementById('err-text');
+    const submitBtn = document.getElementById('submit-btn');
+    const aliasEl = document.getElementById('alias');
+    const passEl = document.getElementById('password');
+    const loginView = document.getElementById('login-view');
+    const sucView = document.getElementById('success-view');
+    const sucAlias = document.getElementById('suc-alias');
+    const dlLink = document.getElementById('dl-link');
+    const backBtn = document.getElementById('back-btn');
+    const pwToggle = document.getElementById('pw-toggle');
+    const pwEye = document.getElementById('pw-eye');
+
+    pwToggle.addEventListener('click', () => {
+      const isPw = passEl.type === 'password';
+      passEl.type = isPw ? 'text' : 'password';
+      pwEye.className = isPw ? 'mdi mdi-eye-outline' : 'mdi mdi-eye-off-outline';
+    });
+
+    function showError(msg) {
+      errText.textContent = msg;
+      errAlert.classList.add('show');
+    }
+    function hideError() { errAlert.classList.remove('show'); }
+    function setLoading(loading) {
+      submitBtn.disabled = loading;
+      submitBtn.classList.toggle('loading', loading);
+    }
+
+    let gapiReady = false;
+    
+    const overlayTimeout = setTimeout(() => {
+      if (!gapiReady && overlay.style.display !== 'none') {
+        overlay.innerHTML = `<div class="overlay-error">
+          <span class="mdi mdi-alert-circle-outline" style="font-size:2rem;color:#d32f2f;"></span>
+          <p style="margin:12px 0;font-weight:700;color:#1a1a2e;">Connection timed out</p>
+          <p style="font-size:0.85rem;color:#555;">Google Drive couldn't be reached.<br>Check your internet and refresh.</p>
+        </div>`;
+        overlay.style.background = '#f0f2f8';
+      }
+    }, 8000);
+
+    function loadGapi() {
+      return new Promise((resolve, reject) => {
+        if (typeof gapi !== 'undefined' && gapi.load) {
+          initClient(resolve, reject);
+          return;
+        }
+        const script = document.createElement('script');
+        script.src = 'https://apis.google.com/js/api.js';
+        script.onload = () => {
+          if (typeof gapi === 'undefined') return reject('gapi not defined');
+          initClient(resolve, reject);
+        };
+        script.onerror = () => reject('Google API script failed to load');
+        document.head.appendChild(script);
+      });
+
+      function initClient(resolve, reject) {
+        gapi.load('client', {
+          callback: async () => {
+            try {
+              await gapi.client.init({ 
+                apiKey: API_KEY, 
+                discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'] 
+              });
+              gapiReady = true;
+              clearTimeout(overlayTimeout);
+              resolve();
+            } catch(e) { 
+              reject('gapi.client.init failed: ' + e.message); 
+            }
+          },
+          onerror: () => reject('gapi.load client module error'),
+          timeout: 10000,
+          ontimeout: () => reject('gapi.load timeout')
+        });
+      }
+    }
+
+    loadGapi()
+      .then(() => {
+        overlay.style.opacity = '0';
+        setTimeout(() => { overlay.style.display = 'none'; }, 200);
+      })
+      .catch(err => {
+        console.warn('GAPI error:', err);
+        clearTimeout(overlayTimeout);
+        overlay.innerHTML = `<div class="overlay-error">
+          <span class="mdi mdi-alert-circle-outline" style="font-size:2rem;color:#d32f2f;"></span>
+          <p style="margin:12px 0;font-weight:700;color:#1a1a2e;">Drive connection failed</p>
+          <p style="font-size:0.85rem;color:#555;">${err}<br><br>Refresh the page to try again.</p>
+        </div>`;
+        overlay.style.background = '#f0f2f8';
+      });
+
+    async function findFile(alias) {
+      if (!gapiReady) throw new Error('Drive not ready');
+      const qs = [
+        `'${FOLDER_ID}' in parents and name = '${alias}.pdf' and mimeType='application/pdf' and trashed=false`,
+        `'${FOLDER_ID}' in parents and name contains '${alias}' and mimeType='application/pdf' and trashed=false`
+      ];
+      for (let q of qs) {
+        const resp = await gapi.client.drive.files.list({ q, fields: 'files(id,name)', pageSize: 5 });
+        const files = resp.result.files;
+        if (files?.length) {
+          const exact = files.find(f => f.name.replace(/\.pdf$/i,'').toLowerCase() === alias.toLowerCase());
+          return exact || files[0];
+        }
+      }
+      return null;
+    }
+
+    async function handleLogin() {
+      hideError();
+      const alias = aliasEl.value.trim();
+      const pw = passEl.value;
+      if (!alias) { showError('Please enter your Alias.'); aliasEl.focus(); return; }
+      if (!pw) { showError('Please enter the portal password.'); passEl.focus(); return; }
+      if (pw !== PORTAL_PW) { showError('Incorrect password.'); passEl.select(); return; }
+      if (!gapiReady) { showError('Drive connection not ready. Please refresh.'); return; }
+
+      setLoading(true);
+      try {
+        const file = await findFile(alias);
+        if (!file) { showError(`No document found for "${alias}".`); setLoading(false); return; }
+        sucAlias.textContent = alias;
+        dlLink.href = `https://drive.google.com/uc?export=download&id=${file.id}`;
+        // Hide header and login view, show success
+        loginHeader.style.display = 'none';
+        loginView.style.display = 'none';
+        sucView.classList.add('show');
+      } catch(e) {
+        showError('Network error. Try again.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    function resetToLogin() {
+      sucView.classList.remove('show');
+      loginHeader.style.display = 'flex';
+      loginView.style.display = 'flex';
+      aliasEl.value = passEl.value = '';
+      dlLink.href = '#';
+      hideError();
+      passEl.type = 'password';
+      pwEye.className = 'mdi mdi-eye-off-outline';
+    }
+
+    submitBtn.addEventListener('click', handleLogin);
+    aliasEl.addEventListener('keydown', e => { if(e.key==='Enter'){ e.preventDefault(); passEl.focus(); } });
+    passEl.addEventListener('keydown', e => { if(e.key==='Enter'){ e.preventDefault(); handleLogin(); } });
+    backBtn.addEventListener('click', resetToLogin);
+    setTimeout(() => aliasEl.focus(), 150);
+  })();
+</script>
+</body>
+</html>
